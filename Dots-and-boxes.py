@@ -1,4 +1,6 @@
+from cgitb import text
 from tkinter import *
+from turtle import color
 import numpy as np
 
 velkost_hry = 600
@@ -73,9 +75,80 @@ class Bodky_a_boxy():
             logicka_pozicia = [r, c]
             typ = 'stlpec'
         return logicka_pozicia, typ
+    def oznacenie_boxu(app):
+        boxy = np.argwhere(app.status_hry == -4) #zistenie nenulovych miest(zabratych)
+        for box in boxy:
+            if list(box) not in app.je_miesto_zabrate and list(box) !=[]:
+                app.je_miesto_zabrate.append(list(box))
+                farba = hrac1_farba_svetla
+                app.shade_box(box, farba)
+        boxy = np.argwhere(app.status_hry == 4)
+        for box in boxy:
+            if list(box) not in app.je_miesto_zabrate and list(box) !=[]:
+                farba = hrac2_farba_svetla
+                app.shade_box(box, farba)
+    def aktualizovat_plochu(app, typ, logicka_pozicia):
+        r = logicka_pozicia[0]
+        c = logicka_pozicia[1]
+        val = 1
+        if app.hrac1_kolo:
+            val =- 1
+        if c < (pocet_bodiek-1) and r < (pocet_bodiek-1):
+            app.status_hry[c][r] += val
+        if typ == 'riadok':
+            app.status_riadku[c][r] = 1
+            if c >= 1:
+                app.status_hry[c-1][r] += val
+        elif type == 'stlpec':
+            app.status_stlpca[c][r] = 1
+            if r >= 1:
+                app.status_hry[c][r-1] += val
+    def koniec_hry(app):
+        return (app.status_riadku == 1).all() and (app.status_stlpca == 1).all()
+    
+    def nakresli_okraj(app, typ, logicka_pozicia):
+        if typ == 'riadok':
+            zaciatok_x = dialka_medzi_bodkami /2 + logicka_pozicia[0]*dialka_medzi_bodkami
+            koniec_x = zaciatok_x + dialka_medzi_bodkami
+            zaciatok_y = dialka_medzi_bodkami / 2 + logicka_pozicia[1]*dialka_medzi_bodkami
+            koniec_y = zaciatok_y
+        elif typ == 'stlpec':
+            zaciatok_y = dialka_medzi_bodkami / 2 + logicka_pozicia[1] * dialka_medzi_bodkami
+            koniec_y = zaciatok_y + dialka_medzi_bodkami
+            zaciatok_x = dialka_medzi_bodkami / 2 + logicka_pozicia[0] * dialka_medzi_bodkami
+            koniec_x = zaciatok_x
+        
+        if app.hrac1_kolo:
+            farba = hrac1_farba
+        else:
+            farba = hrac2_farba
+        app.canvas.create_line(zaciatok_x, zaciatok_y, koniec_x, koniec_y, fill=farba, width=sirka_hrany)
+        
+        def zobraz_koniec_hry(app):
+            hrac1_skore = len(np.argwhere(app.status_hry == 4))
+            hrac2_skore = len(np.argwhere(app.status_hry == 4))
+
+            if hrac1_skore > hrac2_skore:
+                #vyhral hrac 1
+                text = "Vyhral hrac 1"
+                color = hrac1_farba
+            elif hrac1_skore < hrac2_skore:
+                #vyhral hrac 2
+                text = "Vyhral hrac 2"
+                color = hrac2_farba
+            else:
+                text = "Je to remiza"
+                color = 'black'
+            
+            app.canvas.delete("all")
+            app.canvas.create_text(velkost_hry / 2, velkost_hry / 2, font="comic sans-serif", fontsize=50, text=text, color=color)
+
+            text_skore = "Skore \n"
+            app.canvas.create_text(velkost_hry / 2, 5*velkost_hry / 8, font="comic sans-serif", fontsize=50, text=skore_text, fill= zelena)
 
 
-
+            skore_text = 'Hrac 1: ' + str(hrac1_skore) + '\n'
+            skore_text += 'Hrac 2' + str(hrac2_skore) + '\n'
 
 
 
