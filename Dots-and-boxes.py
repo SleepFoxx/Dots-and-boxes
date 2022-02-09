@@ -149,8 +149,54 @@ class Bodky_a_boxy():
 
             skore_text = 'Hrac 1: ' + str(hrac1_skore) + '\n'
             skore_text += 'Hrac 2' + str(hrac2_skore) + '\n'
+            app.canvas.create_text(velkost_hry / 2, 3 * velkost_hry / 4, font="comic sans-ser", fill=zelena)
+
+            app.reset_board = True
+
+            skore_text = "Klikni pre dalsiu hru \n"
+            app.canvas.create_text(velkost_hry / 2, 15 * velkost_hry / 16, font="comic sans-ser", fill='gray')
+
+        
+        def obnov_hru(app):
+            for i in range(pocet_bodiek):
+                x = i * dialka_medzi_bodkami + dialka_medzi_bodkami /2,
+                app.canvas.create_line(x, dialka_medzi_bodkami/2, x, velkost_hry - dialka_medzi_bodkami/2, fill='gray', dash=(2, 2))
+                app.canvas.create_line(dialka_medzi_bodkami/2, x, velkost_hry - dialka_medzi_bodkami/2, x, fill='gray', dash=(2, 2))
+
+            for i in range(pocet_bodiek):
+                for y in range(pocet_bodiek):
+                    zaciatok_x = i * dialka_medzi_bodkami + dialka_medzi_bodkami/2
+                    koniec_x = j * dialka_medzi_bodkami + dialka_medzi_bodkami/2
+                    app.canvas.create_oval(zaciatok_x-sirka_bodky/2, koniec_x-sirka_bodky/2, zaciatok_x+sirka_bodky/2, koniec_x + sirka_bodky/2, fill=farba_bodky, outline=farba_bodky)
 
 
+        def dalsie_kolo(app):
+            text = "Dalsie kolo"
+            if app.hrac1_kolo:
+                text += "Hrac 1"
+                color = hrac1_farba
+            else:
+                text += "Hrac 2"
+                color = hrac2_farba
+
+            app.canvas.delete(app.turntext_handle)
+            app.turntext_handle = app.canvas.create_text(velkost_hry - 5*len(text), velkost_hry - dialka_medzi_bodkami/8, font="comic sans-serif", text=text, fill=farba)
+
+        def tien(app):
+            zaciatok_x = dialka_medzi_bodkami /2 + box[1] * dialka_medzi_bodkami + sirka_hrany/2
+            zaciatok_y = dialka_medzi_bodkami /2 + box[0] * dialka_medzi_bodkami + sirka_hrany/2
+            koniec_x = zaciatok_x + dialka_medzi_bodkami - sirka_hrany
+            koniec_y = zaciatok_y + dialka_medzi_bodkami - sirka_hrany
+            app.canvas.create_rectangle(zaciatok_x, zaciatok_y, koniec_x, koniec_y, fill=farba, outline='')
+
+        def zobraz_kolo(app):
+            text = "Dalsie kolo: "
+            if app.hrac1_kolo:
+                text += "Hrac 1"
+                color = hrac1_farba
+            else:
+                text += "Hrac 2"
+                color = hrac2_farba        
 
 
 
