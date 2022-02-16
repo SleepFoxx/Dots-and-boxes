@@ -1,8 +1,8 @@
 #import zakladneho modulu
-import pygame 
+import pygame
 #rozmery hry
 obrazovka = sirka, vyska = 300, 300
-velkost_boxov = 20
+velkost_boxov = 40
 padding = 20
 riadky = stlpce = (sirka - 4*padding) // velkost_boxov
 print(riadky, stlpce)
@@ -21,7 +21,7 @@ class miesto:
         self.r = r
         self.c = c
         self.index = self.r * riadky + self.c
-        self.rect = pygame.Rect((c*velkost_boxov + 2*padding, r*velkost_boxov + 3*padding, velkost_boxov, velkost_boxov))
+        self.rect = pygame.Rect((self.c*velkost_boxov + 2*padding, r*velkost_boxov + 3*padding, velkost_boxov, velkost_boxov))
 
         self.vlavo = self.rect.left
         self.hore = self.rect.top
@@ -29,15 +29,21 @@ class miesto:
         self.vpravo = self.rect.right
 
         self.okraj = [
-                        [(self.vlavo, self.hore), (self.vpravo, self.hore),
-                         (self.vpravo, self.hore),(self.vpravo, self.dole),
-                         (self.vpravo, self.dole),(self.vlavo, self.dole),
-                         (self.vlavo, self.dole),(self.vlavo, self.hore)
-                        ]
+                        [(self.vlavo, self.hore), (self.vpravo, self.hore)],
+                         [(self.vpravo, self.hore),(self.vpravo, self.dole)],
+                         [(self.vpravo, self.dole),(self.vlavo, self.dole)],
+                         [(self.vlavo, self.dole),(self.vlavo, self.hore)]
+                        
 
                     ]
-        self.strany = [False, False, False, False]
+        self.strany = [False, False, True, False]
         self.vyherca = None
+    def update(self, okno):
+        for index,  side in enumerate(self.strany):
+            if side:
+                pygame.draw.line(okno, biela, (self.okraj[index][0]),
+                                 self.okraj[index][1], 2)
+
 
 boxy = []
 for r in range(riadky):
@@ -61,14 +67,15 @@ while bezi:
         if event.type == pygame.MOUSEBUTTONUP:
             pozicia = None
     #vykreslenie hracej plochy 
-    for c in range(riadky+1):
-        for r in range(stlpce+1):
-            pygame.draw.circle(okno, biela, (c*velkost_boxov + 2*padding, r*velkost_boxov + 2*padding), 2)
+    for r in range(riadky+1):
+        for c in range(stlpce+1):
+            pygame.draw.circle(okno, biela, (c*velkost_boxov + 2*padding, r*velkost_boxov + 3*padding), 2)
     #oznacenie miesta kliku
-    if pozicia:
-        pygame.draw.circle(okno, cervena, pozicia, 2)
+    #if pozicia:
+        #pygame.draw.circle(okno, cervena, pozicia, 2)
 
     for box in boxy:
+        box.update(okno)
         if pozicia and box.rect.collidepoint(pozicia):
             print(box.rect)
             pygame.draw.circle(okno, cervena, (box.rect.centerx, box.rect.centery), 2)
