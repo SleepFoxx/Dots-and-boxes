@@ -36,7 +36,7 @@ class miesto:
                         
 
                     ]
-        self.strany = [False, False, True, False]
+        self.strany = [False, False, False, False]
         self.vyherca = None
     def update(self, okno):
         for index,  side in enumerate(self.strany):
@@ -54,6 +54,12 @@ for r in range(riadky):
 
 #upravenie pozicie mysi na None
 pozicia = None
+bbox = None
+bbox = box
+hore = False
+vpravo = False
+vlavo = False
+dole = False
 #okno hry a priebeh
 bezi = True
 while bezi:
@@ -66,6 +72,29 @@ while bezi:
             pozicia = event.pos
         if event.type == pygame.MOUSEBUTTONUP:
             pozicia = None
+        if event.type == pygame.KEYDOWN:
+
+            if event.key == pygame.K_UP:
+                hore = True
+            if event.key == pygame.K_DOWN:
+                dole = True
+            if event.key == pygame.K_LEFT:
+                vlavo = True
+            if event.key == pygame.K_RIGHT:
+                vpravo = True
+                
+
+        if event.type == pygame.KEYUP:
+            if event.key == pygame.K_UP:
+                hore = False
+            if event.key == pygame.K_DOWN:
+                dole = False
+            if event.key == pygame.K_LEFT:
+                vlavo = False
+            if event.key == pygame.K_RIGHT:
+                vpravo = False
+
+
     #vykreslenie hracej plochy 
     for r in range(riadky+1):
         for c in range(stlpce+1):
@@ -77,9 +106,19 @@ while bezi:
     for box in boxy:
         box.update(okno)
         if pozicia and box.rect.collidepoint(pozicia):
-            print(box.rect)
-            pygame.draw.circle(okno, cervena, (box.rect.centerx, box.rect.centery), 2)
-            
+            bbox = box
+        if bbox:  
+            index = bbox.index
+            pygame.draw.circle(okno, cervena, (bbox.rect.centerx, bbox.rect.centery), 2)
+
+            if hore:
+                bbox.strany[0] = True
+            if vpravo:
+                bbox.strany[1] = True
+            if dole:
+                bbox.strany[2] = True
+            if vlavo:
+                bbox.strany[3] = True
 
     #updatovanie hry aby sme videli vsetky akcie ktore vykoname
     pygame.display.update()
