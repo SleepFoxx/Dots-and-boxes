@@ -1,23 +1,30 @@
 #import zakladneho modulu
 import pygame
+
+
 #rozmery hry
 obrazovka = sirka, vyska = 300, 300
 velkost_boxov = 40
 padding = 20
 riadky = stlpce = (sirka - 4*padding) // velkost_boxov
 print(riadky, stlpce)
+
+
 #definicia okna
 pygame.init()
 okno = pygame.display.set_mode(obrazovka)
-#definicie farieb ktore budu pouzite v hre
+
+
+#definicie farieb ktore budu pouzite v hre + font
 biela = (255, 255, 255)
 cervena = (255, 0, 0)
 modra = (0, 0, 255)
 zelena = (0, 255, 0)
 cierna = (0, 0, 0)
-
 font = pygame.font.SysFont('cursive', 25)
-#classa samotneho okna
+
+
+#classa samotneho okna + zakladne funkcie
 class miesto:
     def __init__(self, r, c):
         self.r = r
@@ -63,30 +70,46 @@ class miesto:
                 pygame.draw.line(okno, biela, (self.okraj[index][0]),
                                  self.okraj[index][1], 2)
 
+
 #list boxov
-boxy = []
-for r in range(riadky):
-    for c in range(stlpce):
-        box = miesto(r, c)
-        boxy.append(box)
+def vytvor_boxy():
+    boxy = []
+    for r in range(riadky):
+        for c in range(stlpce):
+            box = miesto(r, c)
+            boxy.append(box)
+    return boxy
 
 
 #upravenie pozicie mysi na None
-pozicia = None
-bbox = None
-bbox = box
-hore = False
-vpravo = False
-vlavo = False
-dole = False
+def reset_boxov():
+    pozicia = None
+    bbox = None
+    hore = False
+    vpravo = False
+    vlavo = False
+    dole = False
+    return pozicia, bbox, hore, vpravo, vlavo, dole
+#definicia hracov
+def reset_hrac():
+    kolo = 0
+    hraci = ['X', 'O']
+    hrac = hraci[kolo]
+    dalsie_kolo = False
+    return kolo, hraci, hrac, dalsie_kolo
+#skore
+def reset_skore():
+    boxy_pocitadlo = 0
+    hrac1_skore = 0
+    hrac2_skore = 0
+    return boxy_pocitadlo, hrac1_skore, hrac2_skore
 
-kolo = 0
-hraci = ['X', 'O']
-hrac = hraci[kolo]
-dalsie_kolo = False
-
-hrac1_skore = 0
-hrac2_skore = 0
+#ujasnenie definicii
+koniec_hry = False
+boxy = vytvor_boxy()
+pozicia, bbox, hore, vpravo, vlavo, dole = reset_boxov()
+boxy_pocitadlo, hrac1_skore, hrac2_skore = reset_skore()
+kolo, hraci, hrac, dalsie_kolo = reset_hrac()
 
 #okno hry a priebeh
 bezi = True
@@ -95,21 +118,33 @@ while bezi:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             bezi = False
+
         #zaznamenanie klikov v okne hry 
         if event.type == pygame.MOUSEBUTTONDOWN:
             pozicia = event.pos
         if event.type == pygame.MOUSEBUTTONUP:
             pozicia = None
         if event.type == pygame.KEYDOWN:
-            #onkeypress nakreslenie strany
-            if event.key == pygame.K_UP:
-                hore = True
-            if event.key == pygame.K_DOWN:
-                dole = True
-            if event.key == pygame.K_LEFT:
-                vlavo = True
-            if event.key == pygame.K_RIGHT:
-                vpravo = True
+
+            #onkeypress nakreslenie strany + ukoncenie escapom alebo Qckom
+            if event.key == pygame.K_q or event.key == pygame.K_ESCAPE:
+                bezi = False
+
+            if event.key == pygame.K_r:
+                koniec_hry = False
+                boxy = vytvor_boxy()
+                pozicia, bbox, hore, vpravo, vlavo, dole = reset_boxov()
+                boxy_pocitadlo, hrac1_skore, hrac2_skore = reset_skore()
+                kolo, hraci, hrac, dalsie_kolo = reset_hrac()
+            if not koniec_hry:
+                if event.key == pygame.K_UP:
+                    hore = True
+                if event.key == pygame.K_DOWN:
+                    dole = True
+                if event.key == pygame.K_LEFT:
+                    vlavo = True
+                if event.key == pygame.K_RIGHT:
+                    vpravo = True
                 
         #on key release 
         if event.type == pygame.KEYUP:
@@ -137,6 +172,8 @@ while bezi:
         index = bbox.index
         if not bbox.vyherca:
             pygame.draw.circle(okno, cervena, (bbox.rect.centerx, bbox.rect.centery), 2)
+
+
         # definicia strany boxov, prepnutie kola po vyplneni strany
         if hore and not bbox.strany[0]:
             bbox.strany[0] = True
@@ -162,10 +199,15 @@ while bezi:
         
         res = bbox.kontrola_vyhry(hrac)
         if res:
+            boxy_pocitadlo += res
             if hrac == 'X':
                 hrac1_skore += 1
             else:
                 hrac2_skore += 1
+
+            if boxy_pocitadlo == riadky * stlpce:
+                print(hrac1_skore, hrac2_skore)
+                koniec_hry = True
 
 
 
@@ -202,6 +244,22 @@ while bezi:
         pygame.draw.line(okno, modra, (hrac2rect.x, hrac2rect.bottom + 2),
                             (hrac2rect.right, hrac2rect.bottom + 2), 1)
 
+
+    if koniec_hry:
+        rect = pygame.Rect((50, 100, sirka-100, vyska-200))
+        pygame.draw.rect(okno, cierna, rect)
+        pygame.draw.rect(okno, cervena, rect, 2)
+
+        koniec = font.render("Koniec hry", True, biela)
+        okno.blit(koniec, (rect.centerx - koniec.get_width()//2, rect.y + 10 ))
+
+        vyherca = '1' if hrac1_skore > hrac2_skore else '2'
+        vyherca_obrazok = font.render(f'Hrac {vyherca} vyhral', True, zelena)
+        okno.blit(vyherca_obrazok, (rect.centerx - vyherca_obrazok.get_width()//2, rect.centery - 10))
+
+        sprava = "Zmackni r:restart, q:quit"
+        sprava_obrazok = font.render(sprava, True, cervena)
+        okno.blit(sprava_obrazok, (rect.centerx - sprava_obrazok.get_width()//2, rect.centery + 20))
 
     #updatovanie hry aby sme videli vsetky akcie ktore vykoname
     pygame.display.update()
