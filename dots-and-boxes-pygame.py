@@ -15,7 +15,7 @@ cervena = (255, 0, 0)
 modra = (0, 0, 255)
 zelena = (0, 255, 0)
 cierna = (0, 0, 0)
-
+#classa samotneho okna
 class miesto:
     def __init__(self, r, c):
         self.r = r
@@ -38,13 +38,21 @@ class miesto:
                     ]
         self.strany = [False, False, False, False]
         self.vyherca = None
+
+    def kontrola_vyhry(self):
+        if not self.vyherca:
+            if self.strany == [True]*4:
+                self.vyherca = True
+
     def update(self, okno):
+        if self.vyherca:
+            pygame.draw.rect(okno, cervena, self.rect)
         for index,  side in enumerate(self.strany):
             if side:
                 pygame.draw.line(okno, biela, (self.okraj[index][0]),
                                  self.okraj[index][1], 2)
 
-
+#list boxov
 boxy = []
 for r in range(riadky):
     for c in range(stlpce):
@@ -73,7 +81,7 @@ while bezi:
         if event.type == pygame.MOUSEBUTTONUP:
             pozicia = None
         if event.type == pygame.KEYDOWN:
-
+            #onkeypress nakreslenie strany
             if event.key == pygame.K_UP:
                 hore = True
             if event.key == pygame.K_DOWN:
@@ -83,7 +91,7 @@ while bezi:
             if event.key == pygame.K_RIGHT:
                 vpravo = True
                 
-
+        #on key release 
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_UP:
                 hore = False
@@ -107,19 +115,28 @@ while bezi:
         box.update(okno)
         if pozicia and box.rect.collidepoint(pozicia):
             bbox = box
-        if bbox:  
-            index = bbox.index
-            pygame.draw.circle(okno, cervena, (bbox.rect.centerx, bbox.rect.centery), 2)
+    if bbox:  
+        index = bbox.index
+        pygame.draw.circle(okno, cervena, (bbox.rect.centerx, bbox.rect.centery), 2)
+            
+        if hore:
+            bbox.strany[0] = True
+            if index - riadky >= 0:
+                boxy[index - riadky].strany[2] = True
+        if vpravo:
+            bbox.strany[1] = True
+            if (index + 1) % stlpce > 0:
+                boxy[index + 1].strany[3] = True
+        if dole:
+            bbox.strany[2] = True
+            if (index + riadky) < len(boxy):
+                boxy[index + riadky].strany[0] = True
+        if vlavo:
+            bbox.strany[3] = True
+            if index % stlpce > 0:
+                boxy[index - 1].strany[1] = True
 
-            if hore:
-                bbox.strany[0] = True
-            if vpravo:
-                bbox.strany[1] = True
-            if dole:
-                bbox.strany[2] = True
-            if vlavo:
-                bbox.strany[3] = True
-
+        bbox.kontrola_vyhry()
     #updatovanie hry aby sme videli vsetky akcie ktore vykoname
     pygame.display.update()
 #vypnutie hry
