@@ -24,6 +24,18 @@ cierna = (0, 0, 0)
 font = pygame.font.SysFont('cursive', 25)
 
 
+#sound pri vybere policka
+music_effect = pygame.mixer.Sound("effect.wav")
+music_effect.set_volume(0.3)
+
+#hudba ktora hra celu hru az po koniec
+pygame.mixer.music.load("music.wav")
+pygame.mixer.music.play(-1)
+pygame.mixer.music.set_volume(0.5)
+#hudba pri vyhre hry 
+vyhra_hudba = pygame.mixer.Sound("vyhra.wav")
+vyhra_hudba.set_volume(1)
+
 #classa samotneho okna + zakladne funkcie
 class miesto:
     def __init__(self, r, c):
@@ -90,6 +102,7 @@ def reset_boxov():
     vlavo = False
     dole = False
     return pozicia, bbox, hore, vpravo, vlavo, dole
+
 #definicia hracov
 def reset_hrac():
     kolo = 0
@@ -97,6 +110,7 @@ def reset_hrac():
     hrac = hraci[kolo]
     dalsie_kolo = False
     return kolo, hraci, hrac, dalsie_kolo
+
 #skore
 def reset_skore():
     boxy_pocitadlo = 0
@@ -136,15 +150,20 @@ while bezi:
                 pozicia, bbox, hore, vpravo, vlavo, dole = reset_boxov()
                 boxy_pocitadlo, hrac1_skore, hrac2_skore = reset_skore()
                 kolo, hraci, hrac, dalsie_kolo = reset_hrac()
+                pygame.mixer.music.play(-1)
             if not koniec_hry:
                 if event.key == pygame.K_UP:
                     hore = True
+                    pygame.mixer.Sound.play(music_effect)
                 if event.key == pygame.K_DOWN:
                     dole = True
+                    pygame.mixer.Sound.play(music_effect)
                 if event.key == pygame.K_LEFT:
                     vlavo = True
+                    pygame.mixer.Sound.play(music_effect)
                 if event.key == pygame.K_RIGHT:
                     vpravo = True
+                    pygame.mixer.Sound.play(music_effect)
                 
         #on key release 
         if event.type == pygame.KEYUP:
@@ -174,7 +193,7 @@ while bezi:
             pygame.draw.circle(okno, cervena, (bbox.rect.centerx, bbox.rect.centery), 2)
 
 
-        # definicia strany boxov, prepnutie kola po vyplneni strany
+        #definicia strany boxov, prepnutie kola po vyplneni strany
         if hore and not bbox.strany[0]:
             bbox.strany[0] = True
             if index - riadky >= 0:
@@ -195,8 +214,8 @@ while bezi:
             if index % stlpce > 0:
                 boxy[index - 1].strany[1] = True
                 dalsie_kolo = True
-        # kontrola vyhri + pocitac kol
         
+        # kontrola vyhri + pocitac kol
         res = bbox.kontrola_vyhry(hrac)
         if res:
             boxy_pocitadlo += res
@@ -210,11 +229,11 @@ while bezi:
                 koniec_hry = True
 
 
-
         if dalsie_kolo:
             kolo = (kolo + 1) % len(hraci)
             hrac = hraci[kolo]
             dalsie_kolo = False
+            
     #upresnenie parametrov textu hraca 1
 
     hrac1foto = font.render(f'Hrac 1: {hrac1_skore}', True, modra)
@@ -244,12 +263,16 @@ while bezi:
         pygame.draw.line(okno, modra, (hrac2rect.x, hrac2rect.bottom + 2),
                             (hrac2rect.right, hrac2rect.bottom + 2), 1)
 
-
+    #koniec hry, vykreslenie okna a textu, prehranie fanfar na konci a stopnutie hlavnej hudby
     if koniec_hry:
         rect = pygame.Rect((50, 100, sirka-100, vyska-200))
         pygame.draw.rect(okno, cierna, rect)
         pygame.draw.rect(okno, cervena, rect, 2)
-
+        
+        
+        pygame.mixer.music.stop()
+        vyhra_hudba.play()
+            
         koniec = font.render("Koniec hry", True, biela)
         okno.blit(koniec, (rect.centerx - koniec.get_width()//2, rect.y + 10 ))
 
